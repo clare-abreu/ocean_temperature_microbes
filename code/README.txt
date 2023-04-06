@@ -9,3 +9,7 @@ These functions assign copy numbers to taxa at the highest-resolution taxonomic 
 
 calc_WMCN_WMGR_functions.py:
 These functions calculate WMCN (and WMGR) for each sample in a dataset. The datasets used for these functions are in the Generic Data folder of data/.
+
+
+analiz_environmental_data.Rmd:
+These notebook contains the workflow to use Generalized Additive Models and compute the effect of available environmental predictors on WMCN and WMGR. This notebook reproduce the results reported in Fig. 3 and Table S1. The imported dataset is available in the Generic Data folder as X.
