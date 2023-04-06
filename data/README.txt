@@ -12,3 +12,7 @@ This file contains all taxa found in all datasets of free-living bacteria, with 
 
 Mega_Table_metadata.csv:
 This file contains some of the data also present in All_data.csv, as well as some WMCN and WMGR calculations for various scenarios, given for each sample.
+
+
+rrnDB-5.6_pantaxa_stats_NCBI_WITH_SAR11_CLADES.csv:
+This file was downloaded from rrnDB. It contains the rRNA copy number assignments based on taxonomy. We made one edit to this file: the last 12 rows (6821-6832) were added to include SAR11 clades that appeared in datasets and were not represented in the table. These clades are all known to have rRNA copy number = 1.

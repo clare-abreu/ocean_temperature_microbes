@@ -1,0 +1,1 @@
+This folder contains datasets formatted to be input into the functions in calc_WMCN_WMGR_functions.py. The only datasets not available here are LMO and SPT, which are very large and available on Dryad (TBD: WILL ADD LINK HERE).
