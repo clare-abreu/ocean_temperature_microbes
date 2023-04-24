@@ -166,8 +166,6 @@ TARA_ave = pd.DataFrame(data=d)
 grouped_df = TARA_ave.groupby("Depth")
 mean_df = grouped_df.mean()
 mean_df = mean_df.reset_index()
-mean_df.to_csv('/Users/clare/Dropbox/WMCN macroecological patterns/WMCN analyses/Fig2 data from Clare/Fits.5.22/TARA_fit.csv',index=False)
-
 
 plt.plot(mean_df["Depth"],mean_df['WMCN'],'k')
 plt.xlabel('Depth')
