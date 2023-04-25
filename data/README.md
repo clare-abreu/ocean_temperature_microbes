@@ -20,6 +20,7 @@ This file was downloaded from rrnDB. It contains the rRNA copy number assignment
 
 # Final note:
 The LMO 16S data accession numbers are:
+
 PRJEB52828          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52828
 
 PRJEB52855          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52855
