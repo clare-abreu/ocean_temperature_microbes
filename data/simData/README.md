@@ -1,5 +1,6 @@
 This folder contains the simulation results used to fit the datasets in the paper to the Lotka-Volterra 100 species model. 
 
-# all_simulated_WMCNs_deltafit.csv contains three columns: Temperature, p, and weighted mean copy number (WMCN).
+# all_simulated_WMCNs_deltafit.csv 
+contains three columns: Temperature, p, and weighted mean copy number (WMCN).
 
 These numbers were generated with simulations of the 100-species Lotka-Volterra competition equations for 800 hours, 300 times, across the full temperature range spanned by the three main text datasets ([-1 C, 30.5 C] in 0.1-degree increments). To mimic natural communities, rRNA copy numbers ranged from 1 to 10 and were drawn from a geometric distribution, p*(1-p)^(k-1), where k is the copy number and the parameter p represents the fraction of taxa with copy number = 1 in the starting distribution of the community. We sampled a range of values of the parameter p ([0.6, 0.95] in increments of 0.0025). We set most parameters to values midway through the ranges described in the Methods section (activation energy E = 0.33 eV, prefactor a = 170,000, mean interaction coefficient = 0.5 (with SD = 0.25)). 
