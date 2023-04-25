@@ -16,3 +16,22 @@ This file contains some of the data also present in All_data.csv, as well as som
 
 # rrnDB-5.6_pantaxa_stats_NCBI_WITH_SAR11_CLADES.csv:
 This file was downloaded from rrnDB. It contains the rRNA copy number assignments based on taxonomy. We made one edit to this file: the last 12 rows (6821-6832) were added to include SAR11 clades that appeared in datasets and were not represented in the table. These clades are all known to have rRNA copy number = 1.
+
+
+The LMO 16S data accession numbers are:
+PRJEB52828          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52828
+PRJEB52855          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52855
+SRP048666            https://www.ebi.ac.uk/ena/browser/text-search?query=SRP048666
+PRJEB52837          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52837
+PRJNA260662        https://www.ebi.ac.uk/ena/browser/view/PRJNA260662
+PRJEB42455          https://www.ebi.ac.uk/ena/browser/view/PRJEB42455
+PRJEB52851          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52851
+PRJEB52854          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52854
+PRJEB52627          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52627
+PRJEB52772          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52772
+PRJEB52496          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52496
+PRJEB52780          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52780
+PRJEB52782          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52782
+PRJEB52850          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52850
+PRJEB56744          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB56744
+PRJEB56745          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB56745
