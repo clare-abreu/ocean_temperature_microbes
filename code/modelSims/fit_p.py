@@ -5,6 +5,9 @@ Script to call the boostrap_p function to fit the data to the LV model using onl
 one parameter: the value of p in the geometric distribution, which represents the 
 fraction of the starting community with rRNA = 1.
 
+This script also plots the fitted LV result (using the best fit value of p) 
+against each dataset.
+
 Written by Clare Abreu for Abreu & Dal Bello et al, Science Advances (2023)
 """
 

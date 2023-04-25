@@ -3,7 +3,7 @@
 """
 Functions for Lotka-Volterra (LV) and consumer resources simulations,
 as well as other functions calling the simulation functions, and a 
-bootstrapping function to fit real data to the LV model
+bootstrapping function to fit real data to the LV model.
 
 Written by Clare Abreu for Abreu & Dal Bello et al, Science Advances (2023)
 """
