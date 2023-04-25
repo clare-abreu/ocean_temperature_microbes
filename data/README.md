@@ -18,7 +18,7 @@ This file contains some of the data also present in All_data.csv, as well as som
 This file was downloaded from rrnDB. It contains the rRNA copy number assignments based on taxonomy. We made one edit to this file: the last 12 rows (6821-6832) were added to include SAR11 clades that appeared in datasets and were not represented in the table. These clades are all known to have rRNA copy number = 1.
 
 
-# Final note:
+# LMO Accession numbers:
 The LMO 16S data accession numbers are:
 
 PRJEB52828          https://www.ebi.ac.uk/ena/browser/text-search?query=PRJEB52828
