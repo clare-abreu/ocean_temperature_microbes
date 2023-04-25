@@ -1,6 +1,6 @@
 This folder contains the code used in Abreu & Dal Bello et al (Science Advances, 2023).
 
-The subfolder # modelSims contains functions and code for simulating the Lotka-Volterra model and a consumer resource model.
+The subfolder modelSims contains functions and code for simulating the Lotka-Volterra model and a consumer resource model.
 
 The files include here are:
 
