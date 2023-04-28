@@ -9,7 +9,11 @@ These functions assign copy numbers to taxa at the highest-resolution taxonomic 
 
 
 # calc_WMCN_WMGR_functions.py:
-These functions calculate WMCN (and WMGR) for each sample in a dataset. The datasets used for these functions are in the Generic Data folder of data/.
+These functions calculate weighted mean copy number (WMCN) and weighted mean growth rate (WMGR; note that not all datasets have 16S sequences and the availability to do this) for each sample in a dataset. The datasets used for these functions are in the Generic Data folder of data/.
+
+
+# calc_plot_WMCN.py
+This code calculates the WMCN for the free-living datasets and plots the results to reveal a negative trend between WMCN and temperature. Note that these plots do not include other environmental variables, or the multivariate analysis done in the paper to show that the temperature trend is robust to nutrients and other variables. See the R notebook analiz_environmental_data.Rmd for this.
 
 
 # analiz_environmental_data.Rmd:
