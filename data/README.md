@@ -9,7 +9,7 @@ COLUMNS:
 
 Dataset: official name of dataset
 
-Sample_ID: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names below) is added
+Sample_ID: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names in the genericData folder) is added
 
 Dataset_type: 'time' for time series and 'space' for latitude- and depth-spanning data
 
@@ -51,7 +51,7 @@ Salinity: parts per thousand
 
 
 # Mega_Table.csv:
-This file contains all taxa found in all datasets of free-living bacteria, with the exception of the LMO dataset in the first file. Since the LMO dataset is so large, it may be accessed on Dryad: https://datadryad.org/stash/share/LLaE8Wv1Wmo6f0M0nlL7S7U2kIfdj1OH9LHfnmKv8mA
+This file contains all taxa found in all datasets of free-living bacteria, with the exception of the LMO dataset. Since the LMO dataset is so large, it may be accessed on Dryad: https://datadryad.org/stash/share/LLaE8Wv1Wmo6f0M0nlL7S7U2kIfdj1OH9LHfnmKv8mA
 
 COLUMNS:
 
@@ -69,7 +69,7 @@ This file contains some of the data also present in All_data.csv, as well as som
 
 COLUMNS:
 
-Sample: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names below) is added
+Sample: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names in the genericData folder) is added
 
 WMGR: weighted mean growth rate of the sample, as calculated with the codon usage bias method
 
