@@ -2,19 +2,19 @@ This folder contains datasets formatted to be input into the functions in calc_W
 
 Nicknames used for the datasets in these files are:
 
-Linnaeus Microbial Observatory: # LMO
+Linnaeus Microbial Observatory: LMO
 
-ANT 28-5 cruise: # AOT
+ANT 28-5 cruise: AOT
 
-TARA Oceans project: # TARA
+TARA Oceans project: TARA
 
-Pivers Island Coastal Observatory (PICO) site: # Ward
+Pivers Island Coastal Observatory (PICO) site: Ward
 
-Service d’Observation du Laboratoire Arago (SOLA) sampling station: # Med
+Service d’Observation du Laboratoire Arago (SOLA) sampling station: Med
 
-USC Microbial Observatory at the San Pedro Ocean Time-series station in the San Pedro Channel: # SPOT
+USC Microbial Observatory at the San Pedro Ocean Time-series station in the San Pedro Channel: SPOT
 
-P15S GO-SHIP transect: # SPT
+P15S GO-SHIP transect: SPT
 
 
 LMO and AOT datasets have multiple filter fractions; the files containing "free" in their names include only free-living filter fractions.
