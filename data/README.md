@@ -4,28 +4,51 @@ The included files are:
 
 # All_data.csv: 
 This file contains all estimates of weighted mean copy number (MCN) and weighted mean growth rate (MGR) (obtained by a codon usage bias method), in addition to all metadata available from each dataset. The Estimate column gives the MCN or MGR estimate for each sample.
+
 COLUMNS:
+
 Dataset: official name of dataset
+
 Sample_ID: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names below) is added
+
 Dataset_type: 'time' for time series and 'space' for latitude- and depth-spanning data
+
 Date, Latitude, Longitude, Depth: self-explanatory
+
 Filter_fraction: "FL" for free-living, "SPA" for small-particle-attached, "LPA" for large-particle-attached, and "NF" for no filter
+
 SAR11: indicates whether SAR11 bacteria are included in the estimate
+
 Growth_measure: indicates whether the estimate is of weighted mean copy number (WMCN) or weighted mean growth rate (WMGR)
+
 Copiotrophs: indicates whether bacteria with generation time < 5 hours (as estimated by the codon usage bias method) are included in the estimate
+
 Phototrophs: indicates whether cyanobacteria were included in the estimate
+
 Estimate: an estimate of either WMGR or WMCN
+
 Temperature, Phosphate, Nitrate, Ammonium, Chlorophyll, Nitrite, Salinity, Oxygen, pH, Nitrogen_dioxide, Silicate, Day_length: self-explanatory
+
 DOC/DIC/POC: dissolved organic carbon / dissolved inorganic carbon / particulate organic carbon
+
 Insolation: solar radiation
+
 SAR11_RA: relative abundance of SAR11 bacteria
+
 CN1_RA: relative abundance of bacteria with rRNA copy number = 1
+
 UNITS OF ENVIRONMENTAL METADATA:
+
 Depth: meters
+
 Day length: hours
+
 Temperature: Celsius
+
 Phosphate, Ntirate / Nitrite, Ammonium, DOC (dissolved organic carbon), other nutrients:: micrograms/liter
+
 Salinity: parts per thousand
+
 
 # Mega_Table.csv:
 This file contains all taxa found in all datasets of free-living bacteria, with the exception of the LMO dataset in the first file. Since the LMO dataset is so large, it may be accessed on Dryad: https://datadryad.org/stash/share/LLaE8Wv1Wmo6f0M0nlL7S7U2kIfdj1OH9LHfnmKv8mA

@@ -3,9 +3,16 @@ This folder contains datasets formatted to be input into the functions in calc_W
 LMO and AOT datasets have multiple filter fractions; the files containing "free" in their names include only free-living filter fractions.
 
 COLUMNS:
+
 OTU_ID: a generic identifier; has no meaning across datasets
+
 Phylum, Class, Order, Family, Genus, Species, Sequence: when available for each taxon
+
 Phototroph: Indicates whether the taxon is phototrophic (1) or heterotrophic (0)
+
 Copy Number: The estimated rRNA copy number for this taxon
+
 Copy Number Classification Level: Indicates which taxonomic classification level was used for assigning rRNA copy number (the highest-resolution level available in the rrnDB)
+
 Other columns: All samples from the given dataset. Numbers in these columns represent sequenced abundances.
+
