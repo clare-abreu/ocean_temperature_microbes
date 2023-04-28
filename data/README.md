@@ -2,7 +2,7 @@ This folder contains the data used in Abreu & Dal Bello et al (Science Advances,
 
 Nicknames used for the datasets in the following files are:
 
-Linnaeus Microbial Observatory: # LMO
+Linnaeus Microbial Observatory: #LMO
 
 ANT 28-5 cruise: #AOT
 
