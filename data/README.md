@@ -1,4 +1,21 @@
-This folder contains the data used in Abreu & Dal Bello et al (Science Advances, 2023).
+This folder contains the data used in Abreu & Dal Bello et al (Science Advances, 2023). Information on the datasets can be found the Methods section of the manuscript.
+
+Nicknames used for the datasets in the following files are:
+
+Linnaeus Microbial Observatory: # LMO
+
+ANT 28-5 cruise: # AOT
+
+TARA Oceans project: # TARA
+
+Pivers Island Coastal Observatory (PICO) site: # Ward
+
+Service d’Observation du Laboratoire Arago (SOLA) sampling station: # Med
+
+USC Microbial Observatory at the San Pedro Ocean Time-series station in the San Pedro Channel: # SPOT
+
+P15S GO-SHIP transect: # SPT
+
 
 The included files are:
 
@@ -9,7 +26,7 @@ COLUMNS:
 
 Dataset: official name of dataset
 
-Sample_ID: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names in the genericData folder) is added
+Sample_ID: sample IDs given in datasets; a suffix denoting the dataset nicknames (as described above) is added
 
 Dataset_type: 'time' for time series and 'space' for latitude- and depth-spanning data
 
@@ -69,7 +86,7 @@ This file contains some of the data also present in All_data.csv, as well as som
 
 COLUMNS:
 
-Sample: sample IDs given in datasets; a suffix denoting the dataset nicknames (as used the generic_data file names in the genericData folder) is added
+Sample: sample IDs given in datasets; a suffix denoting the dataset nicknames (as described above) is added
 
 WMGR: weighted mean growth rate of the sample, as calculated with the codon usage bias method
 
