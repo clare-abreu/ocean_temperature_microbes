@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 11 16:17:18 2020
+These functions assign copy numbers to taxa at the highest-resolution taxonomic 
+level available from the rrnDB, using the mean from 
+rrnDB-5.6_pantaxa_stats_NCBI_WITH_SAR11_CLADES.csv. Most datasets 
+do not contain species classifications, but the first function will handle 
+species if they are included. The second function does not, but is 
+otherwise identical.
 
-@author: clare
+Written by Clare Abreu for Abreu & Dal Bello et al, Science Advances (2023)
 """
 
 

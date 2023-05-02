@@ -34,7 +34,7 @@ calc_fns_path = './calc_WMCN_WMGR_functions.py'
 sys.path.append(os.path.dirname(os.path.expanduser(calc_fns_path)))
 import calc_WMCN_WMGR_functions as calc
 data_path = '../data/genericData/'
-all_data = ['AOT_free','TARA','Med','SPOT']
+all_data = ['AOT_free','TARA','Med','SPOT'] # Add 'LMO_free' here if you've downloaded the abundance data from Dryad
 
 # Calculate WMCN and plot the results
 for this_data in all_data:

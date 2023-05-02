@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr  5 22:35:56 2023
+These functions calculate WMCN (weighted mean copy number) and/or WMGR (weighted
+mean growth rate) for the datasets in the genericData folder. See calc_plot_WMCN.py
+for an example that calls the calc_wmcn_only function below. Modify that script
+to call the calc_wmgr_wmcn function, but note that 16S sequences must be 
+available to use this estimator, since the sequences were used to determine
+the growth rate from the eGGO database, listed in the "Growth Rate" column of 
+the generic_data.csv files. The generic_data files that contain growth rates 
+are: LMO, Med (SOLA), Ward (PICO), SPT.
 
-@author: clare
+Written by Clare Abreu for Abreu & Dal Bello et al, Science Advances (2023)
 """
 def calc_wmcn_only(this_data,data_path):
     # This function calculates WMCN for each sample in a dataset. The datasets
