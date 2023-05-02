@@ -55,15 +55,10 @@ SAR11_RA: relative abundance of SAR11 bacteria
 CN1_RA: relative abundance of bacteria with rRNA copy number = 1
 
 UNITS OF ENVIRONMENTAL METADATA:
-
 Depth: meters
-
 Day length: hours
-
 Temperature: Celsius
-
 Phosphate, Ntirate / Nitrite, Ammonium, DOC (dissolved organic carbon), other nutrients:: micrograms/liter
-
 Salinity: parts per thousand
 
 
