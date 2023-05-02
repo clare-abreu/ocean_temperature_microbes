@@ -1,4 +1,4 @@
-This folder contains datasets formatted to be input into the functions in calc_WMCN_WMGR_functions.py. Information on these datasets is available in the manuscript's Methods section. The only datasets not available here are LMO and SPT, which are very large and available on Dryad (https://datadryad.org/stash/share/LLaE8Wv1Wmo6f0M0nlL7S7U2kIfdj1OH9LHfnmKv8mA ).
+This folder contains taxa abundance datasets and metadata formatted to be input into the functions in calc_WMCN_WMGR_functions.py, and calc_plot_WMCN.py, which calls those functions. Information on these datasets is available in the manuscript's Methods section. The only datasets not fully available here are LMO and SPT, which are very large and available on Dryad (https://datadryad.org/stash/share/LLaE8Wv1Wmo6f0M0nlL7S7U2kIfdj1OH9LHfnmKv8mA ). The metadata for LMO and SPT are included here, but see Dryad to download the taxa abundance data.
 
 Nicknames used for the datasets in these files are:
 
