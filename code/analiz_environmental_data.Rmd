@@ -1,0 +1,1376 @@
+---
+title: "GAM analysis environmental data"
+output: html_notebook
+---
+
+
+```{r}
+library(nlme)
+library(performance)
+library(mgcv)
+library(naniar)
+
+set.seed(12345)
+```
+
+
+```{r}
+growth_data <- read.csv("./Datasets/All_data.csv", header=T)
+growth_tb <- as_tibble(growth_data)
+
+growth_tb <- growth_tb %>% 
+  mutate_at(vars(starts_with("Date")), list(year=year, month=month, day=day))
+```
+
+
+# LMO
+
+```{r}
+# FL all
+gWMCN_LMO_FL <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+# FL copio
+gWMCNcopio_LMO_FL <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+# PA all
+gWMCN_LMO_PA <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "PA") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+# PA copio
+gWMCN_LMOcopio_PA <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "PA") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+gWMGR_LMO_FL <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+# FL copio
+gWMGRcopio_LMO_FL <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+SD_LMO_help <- gWMCN_LMO_FL %>%
+  select(Temperature, DOC , Nitrate, Ammonium, Phosphate) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_LMO <- SD_LMO_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+mod_LMO_gam_1 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMCN_LMO_FL)
+mod_LMO_gam_2 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMCNcopio_LMO_FL)
+mod_LMO_gam_3 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMCN_LMO_PA)
+mod_LMO_gam_4 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMCN_LMOcopio_PA)
+mod_LMO_gam_5 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMGR_LMO_FL)
+mod_LMO_gam_6 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMGRcopio_LMO_FL)
+
+env_var <- c("Intercept", "Temperature", "Organic Carbon","Nitrate", "Ammonium", "Phosphate")
+sd_env_var <- c(1, SD_LMO$SD[5], SD_LMO$SD[2],SD_LMO$SD[3], SD_LMO$SD[1],SD_LMO$SD[4])
+
+coef_LMO_WMCN_all <- mod_LMO_gam_1$coefficients[1:6]*sd_env_var
+coef_LMO_WMCN_copio <- mod_LMO_gam_2$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("LMO"), length(env_var)) 
+LMO_coef <- tibble(dataset, env_var, MCN_all = coef_LMO_WMCN_all, MCN_copio = coef_LMO_WMCN_copio)
+LMO_coef
+
+coef_LMO_PA_WMCN_all <- mod_LMO_gam_3$coefficients[1:6]*sd_env_var
+coef_LMO_PA_WMCN_copio <- mod_LMO_gam_4$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("LMO"), length(env_var)) 
+LMO_PA_coef <- tibble(dataset, env_var, MCN_all = coef_LMO_PA_WMCN_all, MCN_copio = coef_LMO_PA_WMCN_copio)
+LMO_PA_coef
+
+coef_LMO_WMGR_all <- mod_LMO_gam_5$coefficients[1:6]*sd_env_var
+coef_LMO_WMGR_copio <- mod_LMO_gam_6$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("LMO"), length(env_var)) 
+LMO_GR_coef <- tibble(dataset, env_var, MCN_all = coef_LMO_WMGR_all, MCN_copio = coef_LMO_WMGR_copio)
+LMO_GR_coef
+```
+
+
+
+
+# ANT
+
+```{r}
+# FL all
+gWMCN_ANT_FL <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+# FL copio
+gWMCN_ANTcopio_FL <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+# SPA all
+gWMCN_ANT_SPA <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "SPA") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+# LPA all
+
+gWMCN_ANT_LPA <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "LPA") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+# LPA copio
+gWMCN_ANTcopio_SPA <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "SPA") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+# SPA copio
+
+gWMCN_ANTcopio_LPA <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Dataset == "ANT") %>%
+  filter (Filter_fraction == "LPA") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_ANT_gamm_1 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_FL)
+mod_ANT_gamm_2 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_FL)
+mod_ANT_gamm_3 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_SPA)
+mod_ANT_gamm_4 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_LPA)
+mod_ANT_gamm_5 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_SPA)
+mod_ANT_gamm_6 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_LPA)
+
+
+SD_ANT_help <- gWMCN_ANT_FL %>%
+  select(Temperature) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_ANT <- SD_ANT_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+
+env_var <- c("Intercept", "Temperature")
+sd_env_var <- c(1, SD_ANT$SD[1])
+
+coef_ANT_WMCN_all <- mod_ANT_gamm_1$gam$coefficients[1:2]*sd_env_var
+coef_ANT_WMCN_copio <- mod_ANT_gamm_2$gam$coefficients[1:2]*sd_env_var
+
+
+dataset <- rep(c("ANT"), length(env_var)) 
+ANT_coef <- tibble(dataset, env_var, MCN_all = coef_ANT_WMCN_all, MCN_copio = coef_ANT_WMCN_copio)
+ANT_coef
+
+
+
+coef_ANT_SPA_WMCN_all <- mod_ANT_gamm_3$gam$coefficients[1:2]*sd_env_var
+coef_ANT_SPA_WMCN_copio <- mod_ANT_gamm_5$gam$coefficients[1:2]*sd_env_var
+
+coef_ANT_LPA_WMCN_all <- mod_ANT_gamm_4$gam$coefficients[1:2]*sd_env_var
+coef_ANT_LPA_WMCN_copio <- mod_ANT_gamm_6$gam$coefficients[1:2]*sd_env_var
+
+dataset <- rep(c("ANT_SPA"), length(env_var)) 
+ANT_SPA_coef <- tibble(dataset, env_var, MCN_all = coef_ANT_SPA_WMCN_all, MCN_copio = coef_ANT_SPA_WMCN_copio)
+ANT_SPA_coef
+
+
+dataset <- rep(c("ANT_LPA"), length(env_var)) 
+ANT_LPA_coef <- tibble(dataset, env_var, MCN_all = coef_ANT_LPA_WMCN_all, MCN_copio = coef_ANT_LPA_WMCN_copio)
+ANT_LPA_coef
+
+```
+
+
+# TARA
+
+```{r}
+gWMCN_TARA_FL <- growth_tb %>%
+  filter (Dataset == "TARA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+gWMCN_TARAcopio_FL <- growth_tb %>%
+  filter (Dataset == "TARA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_TARA_gam_1 <- gam (Estimate ~ Temperature + Phosphate + Oxygen + s(Latitude,Longitude, bs="sos"), data=gWMCN_TARA_FL)
+mod_TARA_gam_2 <- gam (Estimate ~ Temperature + Phosphate + Oxygen + s(Latitude,Longitude, bs="sos"), data=gWMCN_TARAcopio_FL)
+
+
+SD_TARA_help <- gWMCN_TARA_FL %>%
+  select(Temperature, Phosphate, Oxygen) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_TARA <- SD_TARA_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "Phosphate", "Oxygen")
+sd_env_var <- c(1, SD_TARA$SD[3], SD_TARA$SD[2], SD_TARA$SD[1])
+
+coef_TARA_WMCN_all <- mod_TARA_gam_1$coefficients[1:4]*sd_env_var
+coef_TARA_WMCN_copio <- mod_TARA_gam_2$coefficients[1:4]*sd_env_var
+
+
+dataset <- rep(c("TARA"), length(env_var)) 
+TARA_coef <- tibble(dataset, env_var, MCN_all = coef_TARA_WMCN_all, MCN_copio = coef_TARA_WMCN_copio)
+TARA_coef
+
+```
+
+
+# SOLA
+
+```{r}
+gWMCN_SOLA_FL <- growth_tb %>%
+  filter (Dataset == "SOLA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate != "NA")
+
+gWMCN_SOLAcopio_FL <- growth_tb %>%
+  filter (Dataset == "SOLA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate != "NA")
+
+gWMGR_SOLA_FL <- growth_tb %>%
+  filter (Dataset == "SOLA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate != "NA")
+
+gWMGR_SOLAcopio_FL <- growth_tb %>%
+  filter (Dataset == "SOLA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate != "NA")
+
+mod_SOLA_gam_1 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMCN_SOLA_FL)
+mod_SOLA_gam_2 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMCN_SOLAcopio_FL)
+mod_SOLA_gam_3 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMGR_SOLA_FL)
+mod_SOLA_gam_4 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMGR_SOLAcopio_FL)
+
+
+SD_SOLA_help <- gWMCN_SOLA_FL %>%
+  select(Temperature, Nitrate, Ammonium, Phosphate, Day_lenght) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SOLA <- SD_SOLA_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature","Nitrate", "Ammonium", "Phosphate", "Day lenght")
+sd_env_var <- c(1, SD_SOLA$SD[5], SD_SOLA$SD[3],SD_SOLA$SD[1], SD_SOLA$SD[4],SD_SOLA$SD[2])
+
+coef_SOLA_WMCN_all <- mod_SOLA_gam_1$coefficients[1:6]*sd_env_var
+coef_SOLA_WMCN_copio <- mod_SOLA_gam_2$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("SOLA"), length(env_var)) 
+SOLA_coef <- tibble(dataset, env_var, MCN_all = coef_SOLA_WMCN_all, MCN_copio = coef_SOLA_WMCN_copio)
+SOLA_coef
+
+coef_SOLA_WMGR_all <- mod_SOLA_gam_3$coefficients[1:6]*sd_env_var
+coef_SOLA_WMGR_copio <- mod_SOLA_gam_4$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("SOLA"), length(env_var)) 
+SOLA_GR_coef <- tibble(dataset, env_var, MCN_all = coef_SOLA_WMGR_all, MCN_copio = coef_SOLA_WMGR_copio)
+SOLA_GR_coef
+
+```
+
+# SPOT
+
+```{r}
+gWMCN_SPOT_FL <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth == 890  ~ "e",
+      Depth == 500  ~ "d",
+      Depth == 150  ~ "c",
+      Depth == 40  ~ "b",
+      Depth == 5  ~ "a")) %>%
+  filter (Dataset == "SPOT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN")#%>%
+  #filter (Depth < 50)
+
+
+gWMCN_SPOTcopio_FL <- growth_tb %>%
+  mutate(
+    Depth_range = case_when(
+      Depth == 890  ~ "e",
+      Depth == 500  ~ "d",
+      Depth == 150  ~ "c",
+      Depth == 40  ~ "b",
+      Depth == 5  ~ "a")) %>%
+  filter (Dataset == "SPOT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") #%>%
+  #filter (Depth < 50)
+
+mod_SPOT_gam_1 <- gam (Estimate ~ Temperature + Oxygen + s(month), random = list (Depth_range =~1), data=gWMCN_SPOT_FL)
+mod_SPOT_gam_2 <- gam (Estimate ~ Temperature + Oxygen + s(month), random = list (Depth_range =~1), data=gWMCN_SPOTcopio_FL)
+
+SD_SPOT_help <- gWMCN_SPOT_FL %>%
+  select(Temperature, Oxygen) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SPOT <- SD_SPOT_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "Oxygen")
+sd_env_var <- c(1, SD_SPOT$SD[2], SD_SPOT$SD[1])
+
+coef_SPOT_WMCN_all <- mod_SPOT_gam_1$coefficients[1:3]*sd_env_var
+coef_SPOT_WMCN_copio <- mod_SPOT_gam_2$coefficients[1:3]*sd_env_var
+
+
+dataset <- rep(c("SPOT"), length(env_var)) 
+SPOT_coef <- tibble(dataset, env_var, MCN_all = coef_SPOT_WMCN_all, MCN_copio = coef_SPOT_WMCN_copio)
+SPOT_coef
+
+```
+
+# Ward
+
+```{r}
+gWMCN_PICO_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+gWMCN_PICOcopio_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+gWMGR_PICO_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") 
+
+gWMGR_PICOcopio_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR")
+
+mod_PICO_gam_1 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMCN_PICO_NF)
+mod_PICO_gam_2 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMCN_PICOcopio_NF)
+mod_PICO_gam_3 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMGR_PICO_NF)
+mod_PICO_gam_4 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMGR_PICOcopio_NF)
+
+
+SD_PICO_help <- gWMCN_PICO_NF %>%
+  select(Temperature, DIC, Nitrate_Nitrite, Ammonium, Phosphate) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_PICO <- SD_PICO_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "DIC", "Nitrate + Nitrite", "Ammonium", "Phosphate")
+sd_env_var <- c(1, SD_PICO$SD[5], SD_PICO$SD[2], SD_PICO$SD[3], SD_PICO$SD[1], SD_PICO$SD[4])
+
+coef_PICO_WMCN_all <- mod_PICO_gam_1$coefficients[1:6]*sd_env_var
+coef_PICO_WMCN_copio <- mod_PICO_gam_2$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("PICO"), length(env_var)) 
+PICO_coef <- tibble(dataset, env_var, MCN_all = coef_PICO_WMCN_all, MCN_copio = coef_PICO_WMCN_copio)
+PICO_coef
+
+coef_PICO_WMGR_all <- mod_PICO_gam_3$coefficients[1:6]*sd_env_var
+coef_PICO_WMGR_copio <- mod_PICO_gam_4$coefficients[1:6]*sd_env_var
+
+
+dataset <- rep(c("PICO"), length(env_var)) 
+PICO_GR_coef <- tibble(dataset, env_var, MCN_all = coef_PICO_WMGR_all, MCN_copio = coef_PICO_WMGR_copio)
+PICO_GR_coef
+
+```
+
+# SPT
+
+```{r}
+gWMCN_SPT_NF_aboveMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth <= 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+
+
+gWMCN_SPTcopio_NF_aboveMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth <= 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+gWMGR_SPT_NF_aboveMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth <= 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+
+
+gWMGR_SPTcopio_NF_aboveMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth <= 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+mod_SPT_gam_above1 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMCN_SPT_NF_aboveMLD)
+mod_SPT_gam_above2 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMCN_SPTcopio_NF_aboveMLD)
+mod_SPT_gam_above3 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMGR_SPT_NF_aboveMLD)
+mod_SPT_gam_above4 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMGR_SPTcopio_NF_aboveMLD)
+
+
+SD_SPTabove_help <- gWMCN_SPT_NF_aboveMLD %>%
+  select(Temperature, Nitrate_Nitrite, Ammonium, Oxygen) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SPTabove <- SD_SPTabove_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "Ammonium", "Nitrate + Nitrite", "oxygen")
+sd_env_var <- c(1, SD_SPTabove$SD[4], SD_SPTabove$SD[1], SD_SPTabove$SD[2], SD_SPTabove$SD[3])
+
+coef_SPT_WMCN_all <- mod_SPT_gam_above1$coefficients[1:5]*sd_env_var
+coef_SPT_WMCN_copio <- mod_SPT_gam_above2$coefficients[1:5]*sd_env_var
+
+
+dataset <- rep(c("SPT_above"), length(env_var)) 
+SPTabove_coef <- tibble(dataset, env_var, MCN_all = coef_SPT_WMCN_all, MCN_copio = coef_SPT_WMCN_copio)
+SPTabove_coef
+
+coef_SPT_WMGR_all <- mod_SPT_gam_above3$coefficients[1:5]*sd_env_var
+coef_SPT_WMGR_copio <- mod_SPT_gam_above4$coefficients[1:5]*sd_env_var
+
+
+dataset <- rep(c("SPT_above"), length(env_var)) 
+SPTabove_GR_coef <- tibble(dataset, env_var, MCN_all = coef_SPT_WMGR_all, MCN_copio = coef_SPT_WMGR_copio)
+SPTabove_GR_coef
+```
+
+```{r}
+gWMCN_SPT_NF_belowMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+
+gWMCN_SPTcopio_NF_belowMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+gWMGR_SPT_NF_belowMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+
+gWMGR_SPTcopio_NF_belowMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+mod_SPT_gam_below1 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMCN_SPT_NF_belowMLD)
+mod_SPT_gam_below2 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMCN_SPTcopio_NF_belowMLD)
+
+mod_SPT_gam_below3 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMGR_SPT_NF_belowMLD)
+mod_SPT_gam_below4 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMGR_SPTcopio_NF_belowMLD)
+
+
+SD_SPTbelow_help <- gWMCN_SPT_NF_belowMLD %>%
+  select(Temperature, Nitrate_Nitrite, Oxygen) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SPTbelow <- SD_SPTbelow_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature","Nitrate + Nitrite", "oxygen")
+sd_env_var <- c(1, SD_SPTbelow$SD[3], SD_SPTbelow$SD[1], SD_SPTbelow$SD[2])
+
+coef_SPT_WMCN_all <- mod_SPT_gam_below1$gam$coefficients[1:4]*sd_env_var
+coef_SPT_WMCN_copio <- mod_SPT_gam_below2$gam$coefficients[1:4]*sd_env_var
+
+
+dataset <- rep(c("SPT_below"), length(env_var)) 
+SPTbelow_coef <- tibble(dataset, env_var, MCN_all = coef_SPT_WMCN_all, MCN_copio = coef_SPT_WMCN_copio)
+SPTbelow_coef
+
+coef_SPT_WMGR_all <- mod_SPT_gam_below3$gam$coefficients[1:4]*sd_env_var
+coef_SPT_WMGR_copio <- mod_SPT_gam_below4$gam$coefficients[1:4]*sd_env_var
+
+
+dataset <- rep(c("SPT_below"), length(env_var)) 
+SPTbelow_GR_coef <- tibble(dataset, env_var, MCN_all = coef_SPT_WMGR_all, MCN_copio = coef_SPT_WMGR_copio)
+SPTbelow_GR_coef
+```
+
+
+# FIGURE
+
+
+```{r}
+coef_data_FL <- tibble(rbind(LMO_coef, ANT_coef, TARA_coef, SOLA_coef, SPOT_coef))
+coef_data_FL
+
+coef_data_FL_bis <- coef_data_FL %>%
+  pivot_longer(cols = MCN_all:MCN_copio, names_to = "copio", values_to = "MCN")%>%
+  filter (env_var != "Intercept")
+coef_data_FL_bis
+```
+
+```{r}
+p_last_fig <-
+  ggplot(coef_data_FL_bis, aes(dataset, env_var, fill= MCN)) + 
+  geom_tile()+
+  scale_x_discrete(position = 'top')+
+  #scale_fill_distiller(palette="RdBu")+
+  #   scale_fill_gradient2(
+  #   low = "blue", 
+  #   mid = "white", 
+  #   high = "red", 
+  #   midpoint = 0
+  # )+
+  theme_minimal() +
+  scale_fill_fermenter(palette = "RdBu") +
+  labs(x ="", y = "Environmental predictor") 
+p_last_fig <- p_last_fig +
+  facet_wrap (~ copio)
+p_last_fig
+```
+
+```{r}
+coef_data_GR <- tibble(rbind(LMO_GR_coef, SOLA_GR_coef, PICO_GR_coef, SPTabove_GR_coef, SPTbelow_GR_coef))
+coef_data_GR
+
+coef_data_GR_bis <- coef_data_GR %>%
+  pivot_longer(cols = MCN_all:MCN_copio, names_to = "copio", values_to = "MGR")%>%
+  filter (env_var != "Intercept")
+coef_data_GR_bis
+```
+
+
+```{r}
+p_suppl_fig_GR <- coef_data_GR_bis %>%
+  #filter (copio == "MCN_all") %>%
+  ggplot(aes(dataset, env_var, fill= MGR)) + 
+  geom_tile()+
+  scale_x_discrete(position = 'top')+
+  #scale_fill_distiller(palette="RdBu")+
+  #   scale_fill_gradient2(
+  #   low = "blue", 
+  #   mid = "white", 
+  #   high = "red", 
+  #   midpoint = 0
+  # )+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 270)) +
+  scale_fill_fermenter(palette = "RdBu") +
+  labs(x ="", y = "Environmental predictor") 
+p_suppl_fig_GR  <- p_suppl_fig_GR  +
+  facet_wrap (~ copio)
+p_suppl_fig_GR
+```
+
+
+
+```{r}
+coef_data_PA <- tibble(rbind(LMO_PA_coef, ANT_SPA_coef, ANT_LPA_coef, PICO_coef, SPTabove_coef, SPTbelow_coef))
+coef_data_PA
+
+coef_data_PA_bis <- coef_data_PA %>%
+  pivot_longer(cols = MCN_all:MCN_copio, names_to = "copio", values_to = "MCN")%>%
+  filter (env_var != "Intercept")
+coef_data_PA_bis
+```
+
+```{r}
+p_suppl_fig <- coef_data_PA_bis %>%
+  #filter (copio == "MCN_all") %>%
+  ggplot(aes(dataset, env_var, fill= MCN)) + 
+  geom_tile()+
+  scale_x_discrete(position = 'top')+
+  #scale_fill_distiller(palette="RdBu")+
+  #   scale_fill_gradient2(
+  #   low = "blue", 
+  #   mid = "white", 
+  #   high = "red", 
+  #   midpoint = 0
+  # )+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 270)) +
+  scale_fill_fermenter(palette = "RdBu") +
+  labs(x ="", y = "Environmental predictor") 
+p_suppl_fig  <- p_suppl_fig  +
+  facet_wrap (~ copio)
+p_suppl_fig 
+```
+
+# HETEROTROPHIC COMMUNITIES
+
+```{r}
+gWMCN_LMOhetero_FL <- growth_tb %>%
+  filter (Dataset == "LMO") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") %>%
+  replace_with_na (replace = list (DOC = c(682.0833,680.8333,618.3333)))
+
+mod_LMO_gam_5 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate + Chlorophyll, data=gWMCN_LMOhetero_FL)
+
+SD_LMOhetero_help <- gWMCN_LMOhetero_FL %>%
+  select(Temperature, DOC , Nitrate, Ammonium, Phosphate, Chlorophyll) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_LMOhetero <- SD_LMOhetero_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "Organic Carbon","Nitrate", "Ammonium", "Phosphate", "Chlorophyll a")
+sd_env_var <- c(1, SD_LMOhetero$SD[6], SD_LMOhetero$SD[3],SD_LMOhetero$SD[4], SD_LMOhetero$SD[1],SD_LMOhetero$SD[5],SD_LMOhetero$SD[2] )
+
+coef_LMO_WMCN_hetero <- mod_LMO_gam_5$coefficients[1:7]*sd_env_var
+
+dataset <- rep(c("LMO"), length(env_var)) 
+LMO_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_LMO_WMCN_hetero)
+LMO_coef_hetero
+
+```
+
+
+```{r}
+
+gWMCN_ANThetero_FL <- growth_tb %>%
+  filter (Dataset == "ANT") %>%
+  mutate(
+    Depth_range = case_when(
+      Depth >= 120  ~ "d>120",
+      Depth >= 85 & Depth < 120  ~ "85-120",
+      Depth >= 50 & Depth < 85  ~ "50-85",
+      Depth >= 25 & Depth < 50  ~ "25-50",
+      Depth < 25  ~ "0-25")) %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_ANT_gamm_7 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANThetero_FL)
+
+env_var <- c("Intercept", "Temperature")
+sd_env_var <- c(1, SD_ANT$SD[1])
+
+coef_ANT_WMCN_hetero <- mod_ANT_gamm_7$gam$coefficients[1:2]*sd_env_var
+
+
+dataset <- rep(c("ANT"), length(env_var)) 
+ANT_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_ANT_WMCN_hetero)
+ANT_coef_hetero
+```
+
+
+```{r}
+gWMCN_TARAhetero_FL <- growth_tb %>%
+  filter (Dataset == "TARA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_TARA_gam_3 <- gam (Estimate ~ Temperature + Phosphate + Oxygen + s(Latitude,Longitude, bs="sos"), data=gWMCN_TARAhetero_FL)
+env_var <- c("Intercept", "Temperature", "Phosphate", "Oxygen")
+sd_env_var <- c(1, SD_TARA$SD[3], SD_TARA$SD[2], SD_TARA$SD[1])
+coef_TARA_WMCN_hetero <- mod_TARA_gam_3$coefficients[1:4]*sd_env_var
+
+
+dataset <- rep(c("TARA"), length(env_var)) 
+TARA_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_TARA_WMCN_hetero)
+TARA_coef_hetero
+```
+
+```{r}
+gWMCN_SOLAhetero_FL <- growth_tb %>%
+  filter (Dataset == "SOLA") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate != "NA")
+
+mod_SOLA_gam_3 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght + Chlorophyll, data=gWMCN_SOLAhetero_FL)
+
+SD_SOLAhetero_help <- gWMCN_SOLA_FL %>%
+  select(Temperature, Nitrate, Ammonium, Phosphate, Day_lenght, Chlorophyll) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SOLAhetero <- SD_SOLAhetero_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature","Nitrate", "Ammonium", "Phosphate", "Day length", "Chlorophyll a")
+sd_env_var <- c(1, SD_SOLAhetero$SD[6], SD_SOLAhetero$SD[4],SD_SOLAhetero$SD[1], SD_SOLAhetero$SD[5],SD_SOLAhetero$SD[3],SD_SOLAhetero$SD[2])
+
+coef_SOLA_WMCN_hetero <- mod_SOLA_gam_3$coefficients[1:7]*sd_env_var
+
+dataset <- rep(c("SOLA"), length(env_var))
+SOLA_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_SOLA_WMCN_hetero)
+SOLA_coef_hetero
+```
+
+```{r}
+gWMCN_SPOThetero_FL <- growth_tb %>%
+  filter (Dataset == "SPOT") %>%
+  mutate(
+    Depth_range = case_when(
+      Depth == 890  ~ "e",
+      Depth == 500  ~ "d",
+      Depth == 150  ~ "c",
+      Depth == 40  ~ "b",
+      Depth == 5  ~ "a")) %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Depth < 20)
+
+mod_SPOT_gamm_3 <- gamm (Estimate ~ Temperature + POC + Nitrate + Phosphate + Oxygen + Chlorophyll + s(month), random = list (Depth_range =~1), data=gWMCN_SPOThetero_FL)
+
+SD_SPOThetero_help <- gWMCN_SPOT_FL %>%
+  select(Temperature, POC, Nitrate, Phosphate, Oxygen, Chlorophyll) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SPOThetero <- SD_SPOThetero_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature","Organic Carbon", "Nitrate", "Phosphate", "Oxygen", "Chlorophyll a")
+sd_env_var <- c(1, SD_SPOThetero$SD[6], SD_SPOThetero$SD[5], SD_SPOThetero$SD[2], SD_SPOThetero$SD[4], SD_SPOThetero$SD[3], SD_SPOThetero$SD[1])
+
+coef_SPOT_WMCN_hetero <- mod_SPOT_gamm_3$gam$coefficients[1:7]*sd_env_var
+
+
+
+dataset <- rep(c("SPOT"), length(env_var))
+SPOT_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_SPOT_WMCN_hetero)
+SPOT_coef_hetero
+```
+
+```{r}
+gWMCN_PICOhetero_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_PICO_gam_3 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate + Chlorophyll,  data=gWMCN_PICOhetero_NF)
+
+SD_PICOhetero_help <- gWMCN_PICOhetero_NF %>%
+  select(Temperature, DIC, Nitrate_Nitrite, Ammonium, Phosphate, Chlorophyll) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_PICOhetero <- SD_PICOhetero_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "DIC", "Nitrate + Nitrite", "Ammonium", "Phosphate", "Chlorophyll a")
+sd_env_var <- c(1, SD_PICOhetero$SD[6], SD_PICOhetero$SD[3], SD_PICOhetero$SD[4], SD_PICOhetero$SD[1], SD_PICOhetero$SD[5], SD_PICOhetero$SD[2])
+
+coef_PICO_WMCN_hetero <- mod_PICO_gam_3$coefficients[1:7]*sd_env_var
+
+
+dataset <- rep(c("PICO"), length(env_var))
+PICO_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_PICO_WMCN_hetero)
+PICO_coef_hetero
+```
+
+```{r}
+gWMCN_SPThetero_NF_belowMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+mod_SPT_gam_below3 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMCN_SPThetero_NF_belowMLD)
+
+env_var <- c("Intercept", "Temperature","Nitrate + Nitrite", "Oxygen")
+sd_env_var <- c(1, SD_SPTbelow$SD[3], SD_SPTbelow$SD[1], SD_SPTbelow$SD[2])
+
+coef_SPT_WMCN_hetero <- mod_SPT_gam_below3$gam$coefficients[1:4]*sd_env_var
+
+dataset <- rep(c("SPT_below"), length(env_var)) 
+SPTbelow_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_SPT_WMCN_hetero)
+SPTbelow_coef_hetero
+```
+
+
+```{r}
+gWMCN_SPThetero_NF_aboveMLD <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "no") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  filter (Depth <= 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+mod_SPT_gam_above3 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen + Chlorophyll,  data=gWMCN_SPThetero_NF_aboveMLD)
+
+SD_SPTabove_hetero_help <- gWMCN_SPThetero_NF_aboveMLD %>%
+  select(Temperature, Nitrate_Nitrite, Ammonium, Oxygen, Chlorophyll) %>%
+  pivot_longer( everything(),names_to = "env_var", values_to = "value")
+
+SD_SPTabove_hetero <- SD_SPTabove_hetero_help %>%
+  filter (value != "NA") %>%
+  group_by(env_var) %>%
+  summarize (SD = sd(value))
+
+env_var <- c("Intercept", "Temperature", "Ammonium", "Nitrate + Nitrite", "Oxygen", "Chlorophyll a")
+sd_env_var <- c(1, SD_SPTabove_hetero$SD[5], SD_SPTabove_hetero$SD[1], SD_SPTabove_hetero$SD[3], SD_SPTabove_hetero$SD[4], SD_SPTabove_hetero$SD[2])
+
+coef_SPT_WMCN_hetero <- mod_SPT_gam_above3$coefficients[1:6]*sd_env_var
+
+
+
+dataset <- rep(c("SPT_above"), length(env_var))
+SPTabove_coef_hetero <- tibble(dataset, env_var, MCN_all = coef_SPT_WMCN_hetero)
+SPTabove_coef_hetero
+```
+```{r}
+coef_data_hetero <- tibble(rbind(LMO_coef_hetero, ANT_coef_hetero, SOLA_coef_hetero, TARA_coef_hetero, SPOT_coef_hetero, PICO_coef_hetero, SPTabove_coef_hetero, SPTbelow_coef_hetero))
+coef_data_hetero
+
+coef_data_hetero_bis <- coef_data_hetero %>%
+  filter (env_var != "Intercept")
+coef_data_hetero_bis
+```
+
+```{r}
+p_suppl_fig_hetero <- coef_data_hetero_bis %>%
+  #filter (copio == "MCN_all") %>%
+  ggplot(aes(dataset, env_var, fill= MCN_all)) + 
+  geom_tile()+
+  scale_x_discrete(position = 'top')+
+  #scale_fill_distiller(palette="RdBu")+
+  #   scale_fill_gradient2(
+  #   low = "blue", 
+  #   mid = "white", 
+  #   high = "red", 
+  #   midpoint = 0
+  # )+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 270)) +
+  scale_fill_fermenter(palette = "RdBu") +
+  labs(x ="", y = "Environmental predictor") 
+p_suppl_fig_hetero  
+```
+
+
+# CN = 1 taxa abundance
+
+```{r}
+WMCN_FL_all <- growth_tb %>%
+  filter (Dataset != "SPOT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") 
+
+CN1_abund <- WMCN_FL_all %>%
+  filter (Estimate != "NA") %>%
+  group_by(Dataset) %>%
+  summarise (mean_RA_CN1 = mean(CN1_RA),
+             SE_RA_CN1 = std.error(CN1_RA))
+#CN1_abund
+
+CN1_abund_SPOT <- growth_tb %>%
+  filter (Dataset == "SPOT") %>%
+  filter (Filter_fraction == "FL") %>%
+  filter (Growth_measure == "WMCN") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Estimate != "NA") %>%
+  filter (Depth == 5)
+
+CN1_abund <- CN1_abund %>%
+  add_row(Dataset = "SPOT", mean_RA_CN1 = mean(CN1_abund_SPOT$CN1_RA), SE_RA_CN1 = std.error(CN1_abund_SPOT$CN1_RA))
+CN1_abund
+
+plot_CN1_RA <- CN1_abund %>%
+  ggplot (aes(x = Dataset, y = mean_RA_CN1)) +
+            geom_col() +
+            geom_errorbar(aes(ymax = mean_RA_CN1 + SE_RA_CN1, ymin = mean_RA_CN1 - SE_RA_CN1)) +
+            theme_minimal() +
+            labs(x ="", y = "Oligotrophs (rrn = 1) relative abundance") 
+plot_CN1_RA            
+```
+
+
+# look at significances SOLA
+
+```{r}
+
+# summary(mod_LMO_gam_1)
+# check_collinearity(mod_LMO_gam_1)
+# summary(mod_LMO_gam_2)
+# check_collinearity(mod_LMO_gam_2)
+# 
+# summary(mod_ANT_gamm_1$gam)
+# check_collinearity(mod_ANT_gamm_1$gam)
+# summary(mod_ANT_gamm_2$gam)
+# check_collinearity(mod_ANT_gamm_2$gam)
+
+summary(mod_SOLA_gam_1)
+check_collinearity(mod_SOLA_gam_1)
+summary(mod_SOLA_gam_2)
+check_collinearity(mod_SOLA_gam_2)
+summary(mod_SOLA_gam_3)
+check_collinearity(mod_SOLA_gam_3)
+```
+
+
+# Look at significance ANT
+
+```{r}
+# mod_ANT_gamm_1 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_FL)
+# mod_ANT_gamm_2 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_FL)
+# mod_ANT_gamm_3 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_SPA)
+# mod_ANT_gamm_4 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANT_LPA)
+# mod_ANT_gamm_5 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_SPA)
+# mod_ANT_gamm_6 <- gamm (Estimate ~ Temperature + s(Latitude, k = 25), random = list (Depth_range =~1), data=gWMCN_ANTcopio_LPA)
+
+summary(mod_ANT_gamm_5$gam)
+summary(mod_ANT_gamm_6$gam)
+```
+
+
+```{r}
+mod_LMO_gam_5 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMGR_LMO_FL)
+mod_LMO_gam_6 <- gam (Estimate ~ Temperature + DOC + Nitrate + Ammonium + Phosphate,  data=gWMGRcopio_LMO_FL)
+
+summary(mod_LMO_gam_5)
+summary(mod_LMO_gam_6)
+```
+
+```{r}
+mod_SOLA_gam_3 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMGR_SOLA_FL)
+mod_SOLA_gam_4 <- gam (Estimate ~ Temperature + Nitrate + Ammonium + Phosphate + Day_lenght, data=gWMGR_SOLAcopio_FL)
+
+summary(mod_SOLA_gam_3)
+summary(mod_SOLA_gam_4)
+```
+
+
+```{r}
+mod_SPT_gam_above3 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMGR_SPT_NF_aboveMLD)
+mod_SPT_gam_above4 <- gam (Estimate ~ Temperature + Ammonium + Nitrate_Nitrite + Oxygen,  data=gWMGR_SPTcopio_NF_aboveMLD)
+
+
+summary(mod_SPT_gam_above3)
+summary(mod_SPT_gam_above4)
+```
+
+```{r}
+mod_SPT_gam_below3 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMGR_SPT_NF_belowMLD)
+mod_SPT_gam_below4 <- gamm (Estimate ~ Temperature + Nitrate_Nitrite + Oxygen + s(Latitude), random = list (F_lat =~1),  data=gWMGR_SPTcopio_NF_belowMLD)
+
+summary(mod_SPT_gam_below3$gam)
+summary(mod_SPT_gam_below4$gam)
+```
+
+```{r}
+summary(mod_SPT_gam_above1)
+summary(mod_SPT_gam_above2)
+summary(mod_SPT_gam_below1$gam)
+summary(mod_SPT_gam_below2$gam)
+```
+
+```{r}
+mod_PICO_gam_1 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMCN_PICO_NF)
+mod_PICO_gam_2 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMCN_PICOcopio_NF)
+mod_PICO_gam_3 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMGR_PICO_NF)
+mod_PICO_gam_4 <- gam (Estimate ~ Temperature + DIC + Nitrate_Nitrite + Ammonium + Phosphate,  data=gWMGR_PICOcopio_NF)
+
+
+summary(mod_PICO_gam_3)
+summary(mod_PICO_gam_4)
+```
+
+```{r}
+summary(mod_PICO_gam_1)
+summary(mod_PICO_gam_2)
+```
+
+# LINEAR RELATIONSHIPS between MCN and Temperature
+
+```{r}
+m_LMO_lm <- lm (Estimate ~ Temperature, data=gWMCN_LMO_FL)
+m_LMOcopio_lm <- lm (Estimate ~ Temperature, data=gWMCNcopio_LMO_FL)
+summary(m_LMO_lm)
+summary(m_LMOcopio_lm)
+```
+
+
+```{r}
+m_ANT_lm <- lm (Estimate ~ Temperature, data=gWMCN_ANT_FL)
+m_ANTcopio_lm <- lm (Estimate ~ Temperature, data=gWMCN_ANTcopio_FL)
+summary(m_ANT_lm)
+summary(m_ANTcopio_lm)
+```
+
+```{r}
+m_TARA_lm <- lm (Estimate ~ Temperature, data=gWMCN_TARA_FL)
+m_TARAcopio_lm <- lm (Estimate ~ Temperature, data=gWMCN_TARAcopio_FL)
+summary(m_TARA_lm)
+summary(m_TARAcopio_lm)
+```
+
+
+```{r}
+m_SOLA_lm <- lm (Estimate ~ Temperature, data=gWMCN_SOLA_FL)
+m_SOLAcopio_lm <- lm (Estimate ~ Temperature, data=gWMCN_SOLAcopio_FL)
+summary(m_SOLA_lm)
+summary(m_SOLAcopio_lm)
+```
+
+```{r}
+m_SPOT_lm <- lm (Estimate ~ Temperature, data=gWMCN_SPOT_FL)
+m_SPOTcopio_lm <- lm (Estimate ~ Temperature, data=gWMCN_SPOTcopio_FL)
+summary(m_SPOT_lm)
+summary(m_SPOTcopio_lm)
+```
+
+
+# LINEAR RELATIONSHIPS between MGR and Temperature
+
+```{r}
+mod_SOLA_lm <- lm (Estimate ~ Temperature, data=gWMGR_SOLA_FL)
+mod_SOLAcopio_lm <- lm (Estimate ~ Temperature, data=gWMGR_SOLAcopio_FL)
+summary(mod_SOLA_lm)
+summary(mod_SOLAcopio_lm)
+```
+
+
+```{r}
+mod_LMO_lm <- lm (Estimate ~ Temperature, data=gWMGR_LMO_FL)
+mod_LMOcopio_lm <- gam (Estimate ~ Temperature, data=gWMGR_LMOcopio_FL)
+summary(mod_LMO_lm)
+summary(mod_LMOcopio_lm)
+```
+
+```{r}
+mod_PICO_lm <- lm (Estimate ~ Temperature, data=gWMGR_PICO_NF)
+mod_PICOcopio_lm <- gam (Estimate ~ Temperature, data=gWMGR_PICOcopio_NF)
+summary(mod_PICO_lm)
+summary(mod_PICOcopio_lm)
+```
+
+```{r}
+gWMGR_SPT_NF <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  #filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+
+mod_SPT_lm <- lm (Estimate ~ Temperature, data=gWMGR_SPT_NF)
+summary(mod_SPT_lm)
+
+gWMGR_SPTcopio_NF <- growth_tb %>%
+  filter (Dataset == "SPT") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMGR") %>%
+  filter (Estimate < 5) %>%
+  filter (Oxygen > 0) %>%
+  filter (Phosphate > -50) %>%
+  filter (Nitrate_Nitrite > -50) %>%
+  #filter (Depth > 180) %>%
+  mutate (F_lat = factor(abs(Latitude)))
+
+mod_SPTcopio_lm <- lm (Estimate ~ Temperature, data=gWMGR_SPTcopio_NF)
+summary(mod_SPTcopio_lm)
+```
+
+```{r}
+gWMCN_PICO_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "yes") %>%
+  filter (Copiotrophs == "yes") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_PICO_lm <- lm (Estimate ~ Temperature, data=gWMCN_PICO_NF)
+summary(mod_PICO_lm)
+
+gWMCN_PICOcopio_NF <- growth_tb %>%
+  filter (Dataset == "PICO") %>%
+  filter (Filter_fraction == "NF") %>%
+  filter (SAR11 == "no") %>%
+  filter (Copiotrophs == "only") %>%
+  filter (Phototrophs == "yes") %>%
+  filter (Growth_measure == "WMCN") 
+
+mod_PICOcopio_lm <- lm (Estimate ~ Temperature, data=gWMCN_PICOcopio_NF)
+summary(mod_PICOcopio_lm)
+```
+
