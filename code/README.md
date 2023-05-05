@@ -17,6 +17,6 @@ This code calculates the WMCN for the free-living datasets and plots the results
 
 
 # analiz_environmental_data.Rmd:
-These notebook contains the workflow to use Generalized Additive Models and compute the effect of available environmental predictors on WMCN and WMGR. This notebook reproduce the results reported in Fig. 3 and Table S1. The imported dataset is available in the Generic Data folder as X.
+These notebook contains the workflow to use Generalized Additive Models and compute the effect of available environmental predictors on WMCN and WMGR. This notebook reproduce the results reported in Fig. 3 and Table S1. The dataset used for these functions are in the Generic Data folder of data/.
 
 
