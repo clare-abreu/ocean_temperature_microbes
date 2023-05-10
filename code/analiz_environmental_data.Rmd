@@ -15,7 +15,7 @@ set.seed(12345)
 
 
 ```{r}
-growth_data <- read.csv("./Datasets/All_data.csv", header=T)
+growth_data <- read.csv("./data/All_data.csv", header=T)
 growth_tb <- as_tibble(growth_data)
 
 growth_tb <- growth_tb %>% 
