@@ -5,6 +5,11 @@ output: html_notebook
 
 
 ```{r}
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(lubridate)
 library(nlme)
 library(performance)
 library(mgcv)
@@ -15,7 +20,7 @@ set.seed(12345)
 
 
 ```{r}
-growth_data <- read.csv("./data/All_data.csv", header=T)
+growth_data <- read.csv("../data/All_data.csv", header=T)
 growth_tb <- as_tibble(growth_data)
 
 growth_tb <- growth_tb %>% 
